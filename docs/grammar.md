@@ -24,9 +24,25 @@ identifier assigment-operator argument-list scope
 - 
 
 
+# functions
 
-unsafe {
+```
+    kk { }
+ 
+    identifier scope('{ }')
+
+    identifier followed by scope allways means call 
+
+    kk () -> asd{ }, {}
+
+    call 
+
+    kk::fromV {}
 
 
+    fn 
+```
 
-}
+```
+
+```

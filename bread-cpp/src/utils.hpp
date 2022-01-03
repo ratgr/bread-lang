@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <vector>
 
@@ -45,6 +46,18 @@ inline std::string make_pointee(int count) {
 	std::string s( count + 1, ' ');
 	s[count] = '^';
 	return s;
+}
+
+inline std::string untilLineEnd(const char* begin) {
+	int count = 0;
+	auto it = begin;
+	while (*it != '\0' && *it != '\n') it++;
+	return std::string(begin, it - begin);
+
+}
+
+inline std::string indent(const char* text, const char* indentWith) {
+
 }
 
 

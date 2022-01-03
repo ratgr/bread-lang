@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <unordered_map>
 #include <format>
@@ -14,8 +15,12 @@ namespace bread {
         Identifier = 256,
         StringLiteral,  // "string-literal"
 
+        /* Assignment */
+        OpAssign,    // [x] =
+        OpType,      // [ ] :
+        Op           // [ ]   
 
-        OpAssign,       // =
+        /*Logic*/
         OpEquals,       // ==
         OpNotEquals,    // !=
 
@@ -38,6 +43,7 @@ namespace bread {
             BREAD_ENUM_STRING(StringLiteral),
 
 
+            /*Logic*/
             BREAD_ENUM_STRING(OpEquals),
             BREAD_ENUM_STRING(OpNotEquals),
             
@@ -64,8 +70,8 @@ namespace bread {
 
     struct Location {
         StringType uri = "";
-        int line=0;
-        int column=0;
+        int line = 0;
+        int column = 0;
     };
 
     struct Token {

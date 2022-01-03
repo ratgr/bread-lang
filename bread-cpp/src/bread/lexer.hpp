@@ -25,6 +25,7 @@ namespace bread {
         std::vector<Token> tokens{};
         // Debug
         TokenIterator begin;
+        TokenIterator lineBegin;
 
         TokenIterator it;
         Location loc;
@@ -37,24 +38,13 @@ namespace bread {
         std::pair<Location, TokenIterator> getCurrent() { return {loc, it}; }
 
         void pushContext(std::unique_ptr<LexerContext>&& lexerContext);
-
-        
-
         void lex(std::string string);
-
-
-
-
     };
     struct LexerContext {
 
         Lexer* lexer;
 
-        LexerContext(Lexer& lexer) : lexer{ &lexer }
-        {
-            
-        }
-
+        LexerContext(Lexer& lexer) : lexer{ &lexer }{}
         virtual ~LexerContext() {}
         
         virtual void push_self() = 0;
@@ -127,7 +117,7 @@ namespace bread {
         void lex() override {}
     };
 
-#pragma region template implementation
+#pragma region template_implementation
 
     /* Template Implementation */
     template<typename T, class ...args>

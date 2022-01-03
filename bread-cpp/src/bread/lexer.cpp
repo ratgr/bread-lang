@@ -10,6 +10,7 @@ namespace bread {
 	void Lexer::consume() {
 		it++;
 		if (isNewLine(*it)) {
+			lineBegin = it;
 			loc.line++;
 			loc.column = 0;
 		}
@@ -22,8 +23,8 @@ namespace bread {
 
 		if constexpr (false) {
 			std::cout << std::format("PUSH lexer ({}): {}\n", context.size(), lexerContext->name());
-			std::cout << std::format("\t{}\n", escape_char(begin));
-			std::cout << std::format("\t{}\n", pointee_escaped(begin, it));
+			std::cout << std::format("\t{}\n", untilLineEnd(lineBegin));
+			std::cout << std::format("\t{}\n", make_pointee(it - lineBegin));
 		}
 
 	}
@@ -39,13 +40,18 @@ namespace bread {
 			auto ptr = std::move(context.top());
 			context.pop();
 			
-			std::cout << std::format("POP lexer ({}): {}\n", context.size(), ptr->name());
-			std::cout << std::format("\t{}\n", escape_char(cstring));
-			std::cout << std::format("\t{}\n", pointee_escaped(cstring, it));
+			if constexpr (is_debug()){
+				/*Write debug info of context*/
+				std::cout << std::format("POP lexer ({}): {}\n", context.size(), ptr->name());
+				std::cout << std::format("\t{}\n", escape_char(cstring));
+				std::cout << std::format("\t{}\n", pointee_escaped(cstring, it));
+			}
 
 			ptr->lex();
 		} while (!context.empty());
 	}
+
+#pragma region LexerContext /*LexerContext*/
 
 	void LexerContext::add(Token&& token) { 
 		lexer->tokens.push_back(token); 
@@ -64,6 +70,8 @@ namespace bread {
 		return k;
 	}
 
+#pragma endregion /*LexerContext*/
+
 	void GeneralScopeContext::lex() {
 		auto c = peek();
 		
@@ -80,7 +88,6 @@ namespace bread {
 				return;
 			
 			}
-
 
 			if (c == '"') {
 				consume();
@@ -142,7 +149,6 @@ namespace bread {
 				continue;
 			}
 
-
 			//identifier
 			if (isalpha(c) || c == '_') {
 				consume();
@@ -191,6 +197,8 @@ namespace bread {
 
 
 }
+
+//mystruct  := struct {} 
 
 auto example = R"(
 
