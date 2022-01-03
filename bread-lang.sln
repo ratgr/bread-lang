@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bread-cpp", "breadcpp\bread-cpp.vcxproj", "{0F69EF5F-ED4D-4FF4-A5D6-03C3311AC8AB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bread-cpp", "bread-cpp\bread-cpp.vcxproj", "{0F69EF5F-ED4D-4FF4-A5D6-03C3311AC8AB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bread-cpp.test", "breadcpp\bread-cpp.test.vcxproj", "{2E884183-3FDB-431F-A97C-BB307E23595C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bread-cpp.test", "bread-cpp\bread-cpp.test.vcxproj", "{2E884183-3FDB-431F-A97C-BB307E23595C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
