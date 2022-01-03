@@ -15,7 +15,7 @@ namespace bread {
         StringLiteral,  // "string-literal"
 
 
-        OpAssign,       // =s
+        OpAssign,       // =
         OpEquals,       // ==
         OpNotEquals,    // !=
 
@@ -71,7 +71,7 @@ namespace bread {
     struct Token {
         TokenType type;
         Location begin;
-        int length;
+        int64_t length;
         StringType str = "";
     };
 

@@ -5,9 +5,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
-#include "utils.hpp"
-
-
+#include "../utils.hpp"
 
 
 namespace bread {
@@ -17,39 +15,42 @@ namespace bread {
     struct GeneralScopeContext;
     struct EndContext;
 
-
-
     bool isNewLine(char c) {
         return c == '\n';
     }
 
     struct Lexer {
+
         std::stack<std::unique_ptr<LexerContext>> context{};
         std::vector<Token> tokens{};
-        /*debug*/
+        // Debug
         TokenIterator begin;
 
+        TokenIterator it;
+        Location loc;
+
+    public:
+        void consume();
+        Rune peek()  { return *it; }
+        Location getLocation() { return loc; };
+
+        std::pair<Location, TokenIterator> getCurrent() { return {loc, it}; }
+
+        void pushContext(std::unique_ptr<LexerContext>&& lexerContext);
+
+        
 
         void lex(std::string string);
 
 
+
+
     };
-
-
     struct LexerContext {
 
         Lexer* lexer;
-        TokenIterator it;
-        // TokenIterator begin;
-        TokenIterator currentTokenIt;
 
-        Location beginLoc;
-        Location loc;
-        Location currentTokenLoc;
-
-        LexerContext(Lexer& lexer, TokenIterator begin, Location beginLoc) :
-            lexer{ &lexer }, /*begin{begin},*/ it{begin}, currentTokenIt{begin},
-            beginLoc{ beginLoc }, loc{ beginLoc }, currentTokenLoc{ beginLoc }
+        LexerContext(Lexer& lexer) : lexer{ &lexer }
         {
             
         }
@@ -59,26 +60,26 @@ namespace bread {
         virtual void push_self() = 0;
         virtual void lex() = 0;
         
-        Rune peek() { 
-            return *it; 
-        }
-        
-        void consume();
+        Rune peek() { return lexer->peek(); }
+        void consume() { lexer->consume(); }
+
         void add(Token&& token);
 
-        template<TokenType T>
-        void add() { add(Token{ T, currentTokenLoc, it - currentTokenIt }); }
+        /* Create content token*/
+        template<TokenType TTokenType>
+        Token makeToken(Location location, TokenIterator beginIter) {
+            return Token{ TTokenType, location, lexer->it - beginIter, std::string(beginIter, lexer->it - beginIter) };
+        }
 
-        template<TokenType T>
-        void add(TokenIterator begin) { add(Token{ T, currentTokenLoc, it - begin, std::string(begin, it - begin)}); }
-
+        /* Create token without content*/
+        template<TokenType TTokenType>
+        Token makeToken(Location location) {
+            return Token{ TTokenType, location, 0 };
+        }
 
         template<typename T, class... args>
         void addContext(args&&... context);
-        
-        void commit();
-
-        void update();;
+  
 
         virtual std::string name();
 
@@ -92,7 +93,7 @@ namespace bread {
         void push_self() override {
 
             CRTP copy = *((CRTP*)(this));
-            lexer->context.emplace(std::make_unique<CRTP>(copy));
+            lexer->pushContext(std::make_unique<CRTP>(copy));
         }
 
     };
@@ -101,11 +102,11 @@ namespace bread {
 
         Rune endRune;
 
-        GeneralScopeContext(Lexer& lexer, TokenIterator begin, Location beginLoc, Rune endRune) :
-            ParentLexerContext{ lexer, begin, beginLoc }, endRune{ endRune } {}
+        GeneralScopeContext(Lexer& lexer, Rune endRune) :
+            ParentLexerContext{ lexer }, endRune{ endRune } {}
         
         GeneralScopeContext(GeneralScopeContext& other) :
-            ParentLexerContext{other}, endRune{ other.endRune }   {}
+            ParentLexerContext{other}, endRune{ other.endRune } {}
 
         void lex () override;
 
@@ -119,8 +120,6 @@ namespace bread {
     struct CommentContext : ParentLexerContext<CommentContext> {
         using ParentLexerContext::ParentLexerContext;
         void lex() override;
-
-
     };
 
     struct EndContext : ParentLexerContext<EndContext> {
@@ -128,28 +127,15 @@ namespace bread {
         void lex() override {}
     };
 
-
-
-
-
 #pragma region template implementation
-
-
 
     /* Template Implementation */
     template<typename T, class ...args>
     inline void LexerContext::addContext(args && ...context) {
         push_self();
 
-        std::cout << std::format("\t{}\n", escape_char(lexer->begin));
-        std::cout << std::format("\t{}\n", pointee_escaped(lexer->begin, it-1));
-       
-       /* std::cout << "PUSH self: \n\t";
-        lexer->print();
-        std::cout << "\n";*/
-
-        lexer->context.emplace(std::make_unique<T>( *lexer, it, loc, std::forward<args>(context)...));
-        std::cout << std::format("PUSH lexer ({}): {}\n", lexer->context.size(),  lexer->context.top()->name());
+        lexer->context.emplace(std::make_unique<T>( *lexer, std::forward<args>(context)...));
+        
     }
 
 #pragma endregion

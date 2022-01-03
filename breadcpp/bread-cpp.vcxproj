@@ -107,12 +107,13 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\lexer.cpp" />
-    <ClCompile Include="src\token.cpp" />
+    <ClCompile Include="src\bread\lexer.cpp" />
+    <ClCompile Include="src\bread\token.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\lexer.hpp" />
-    <ClInclude Include="src\token.hpp" />
+    <ClInclude Include="src\debug.hpp" />
+    <ClInclude Include="src\bread\lexer.hpp" />
+    <ClInclude Include="src\bread\token.hpp" />
     <ClInclude Include="src\utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

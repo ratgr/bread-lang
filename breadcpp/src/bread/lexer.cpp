@@ -1,31 +1,13 @@
 #include "./lexer.hpp"
+#include "../debug.hpp"
 #include <iostream>
 #include <cassert>
 
 
 namespace bread {
-	
-	void Lexer::lex(std::string string) {
-		auto cstring = string.c_str();
-
-		begin = cstring;
-
-		context.push(std::make_unique<EndContext>(*this, cstring, Location{}));
-		context.push(std::make_unique<GeneralScopeContext>(*this, cstring, Location{}, 0));
-		do {
-			auto ptr = std::move(context.top());
-			context.pop();
-			
-			std::cout << std::format("POP lexer ({}): {}\n", context.size(), ptr->name());
-			std::cout << std::format("\t{}\n", escape_char(cstring));
-			std::cout << std::format("\t{}\n", pointee_escaped(cstring, ptr->it));
-
-			ptr->lex();
-		} while (!context.empty());
-	}
 
 
-	void LexerContext::consume() {
+	void Lexer::consume() {
 		it++;
 		if (isNewLine(*it)) {
 			loc.line++;
@@ -35,18 +17,38 @@ namespace bread {
 			loc.column++;
 		}
 	}
-	void LexerContext::add(Token&& token) { lexer->tokens.push_back(token); }
-	void LexerContext::commit() {
-		update();
-		
-		lexer->context.top()->loc = loc;
-		lexer->context.top()->it = it;
+	void Lexer::pushContext(std::unique_ptr<LexerContext>&& lexerContext){
+		context.emplace(std::move(lexerContext));
 
-		//std::cout << std::format("TOP after \n\t{}\n", std::to_string(*lexer->context.top().get()));
+		if constexpr (false) {
+			std::cout << std::format("PUSH lexer ({}): {}\n", context.size(), lexerContext->name());
+			std::cout << std::format("\t{}\n", escape_char(begin));
+			std::cout << std::format("\t{}\n", pointee_escaped(begin, it));
+		}
+
 	}
-	void LexerContext::update() {
-		currentTokenLoc = loc;
-		currentTokenIt = it;
+	void Lexer::lex(std::string string) {
+		auto cstring = string.c_str();
+
+		begin = cstring;
+		it = begin;
+
+		context.push(std::make_unique<EndContext>(*this));
+		context.push(std::make_unique<GeneralScopeContext>(*this,0));
+		do {
+			auto ptr = std::move(context.top());
+			context.pop();
+			
+			std::cout << std::format("POP lexer ({}): {}\n", context.size(), ptr->name());
+			std::cout << std::format("\t{}\n", escape_char(cstring));
+			std::cout << std::format("\t{}\n", pointee_escaped(cstring, it));
+
+			ptr->lex();
+		} while (!context.empty());
+	}
+
+	void LexerContext::add(Token&& token) { 
+		lexer->tokens.push_back(token); 
 	}
 
 	std::string LexerContext::name()
@@ -63,13 +65,17 @@ namespace bread {
 	}
 
 	void GeneralScopeContext::lex() {
-
-		for (auto c = peek(); c != 0; c = peek(), update()) {
+		auto c = peek();
+		
+		while(c != 0) {
+			c = peek();
+			auto [loc, begin] = lexer->getCurrent();
 			
 			if (c == endRune) {
 				consume();
-				add < TokenType{ '}' } > ();
-				commit();
+				if (endRune == '}') {
+					add(makeToken < TokenType{ '}' } > (loc));
+				}
 				//finished
 				return;
 			
@@ -77,7 +83,6 @@ namespace bread {
 
 
 			if (c == '"') {
-				auto begin = it;
 				consume();
 				c = peek();
 				for (c = peek(); !(c == '"' || c == 0); c = peek()) {
@@ -94,13 +99,13 @@ namespace bread {
 					
 				}
 				consume();
-				add < TokenType::StringLiteral > (begin);
+				add(makeToken< TokenType::StringLiteral >(loc, begin));
 				continue;
 			}
 
 			if (c == '{') {
 				consume();
-				add<TokenType{ '{' }> ();
+				add(makeToken < TokenType{ '{' } > (loc));
 				addContext<GeneralScopeContext>('}');
 				//Open new scope
 				return;
@@ -111,10 +116,10 @@ namespace bread {
 				c = peek();
 				if (c == '=') {
 					consume();
-					add < TokenType::OpEquals > ();
+					add(makeToken < TokenType::OpEquals > (loc));
 					continue;
 				}
-				add < TokenType::OpEquals >();   
+				add(makeToken < TokenType::OpAssign >(loc));
 				continue;
 			}
 
@@ -133,31 +138,22 @@ namespace bread {
 					return;
 				}
 
-				add < TokenType::OpDivide >();
+				add(makeToken < TokenType::OpDivide >(loc));
 				continue;
 			}
 
 
 			//identifier
 			if (isalpha(c) || c == '_') {
-				auto begin = it;
 				consume();
 				for (c = peek(); isalpha(c) || c == '_'; c = peek()) { consume(); }
-				add <TokenType::Identifier>(begin);
+				add(makeToken < TokenType::Identifier >(loc, begin));
 				continue;
 			}
 
 			//probablemente lanzar un error
 			consume();
 		
-		}
-
-		if (peek() == endRune) {
-			assert(endRune == 0);
-			commit();
-			//finished
-			return;
-
 		}
 
 
@@ -172,7 +168,6 @@ namespace bread {
 				consume();
 				c = peek();
 				if (c == '*') {
-					consume();
 					addContext<CommentContext>();
 					return;
 				}
@@ -184,7 +179,6 @@ namespace bread {
 				c = peek();
 				if (c == '/') {
 					consume();
-					commit();
 					//Finished
 					return;
 				}
