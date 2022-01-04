@@ -17,21 +17,24 @@ namespace bread {
 
         /* Assignment */
         OpAssign,    // [x] =
-        OpType,      // [ ] :
-        Op           // [ ]   
+
 
         /*Logic*/
         OpEquals,       // ==
         OpNotEquals,    // !=
 
         /*Aritmetic*/
-        OpStar,         // *    
-        OpPlus,         // +
-        OpDivide,       // /
+        OpStar,         // [X] *
+        OpStarStar,     // [ ] **
+        OpPlus,         // [X] +
+        OpPlus,         // [ ] ++
+        OpDivide,       // [X] /
 
         /*Exclamation*/
-        OpExclamation,  // !
-        OpInterrogation,// ?
+        OpExclamation,  // [ ] !
+        OpInterrogation,// [ ] ?
+        OpColon,        // [ ] :
+        OpSemiColon     // [ ] ;
 
         Error
 

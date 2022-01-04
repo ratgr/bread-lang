@@ -1,9 +1,9 @@
 
 ## Title
 
-1) Should allow migration from a c++ code base file by file-
-2) Not forcing the programmer to do things your way
-3) Same code should be possible to run @ compile time as runtime
+1) - [ ] Should allow migration from a c++ code base file by file-
+2) - [ ] Not forcing the programmer to do things your way
+3) - [ ] Same code should be possible to run at compile time as runtime
 
 
 ## Consequences

@@ -72,6 +72,7 @@ namespace bread {
 
 #pragma endregion /*LexerContext*/
 
+
 	void GeneralScopeContext::lex() {
 		auto c = peek();
 		
@@ -84,11 +85,19 @@ namespace bread {
 				if (endRune == '}') {
 					add(makeToken < TokenType{ '}' } > (loc));
 				}
+				if (endRune == ')') {
+					add(makeToken < TokenType{ ')' } > (loc));
+				}
 				//finished
 				return;
 			
 			}
 
+			//Macros
+			if(c == '!') {
+				
+			}
+			// String Literal
 			if (c == '"') {
 				consume();
 				c = peek();
@@ -110,10 +119,20 @@ namespace bread {
 				continue;
 			}
 
+			//Scope
 			if (c == '{') {
 				consume();
 				add(makeToken < TokenType{ '{' } > (loc));
 				addContext<GeneralScopeContext>('}');
+				//Open new scope
+				return;
+			}
+
+
+			if (c == '(') {
+				consume();
+				add(makeToken < TokenType{ '(' } > (loc));
+				addContext<GeneralScopeContext>(')');
 				//Open new scope
 				return;
 			}
